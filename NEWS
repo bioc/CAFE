@@ -1,0 +1,15 @@
+version 0.99.2
+
+    o Code and man files are now limited to 80 character width per line
+
+    o Code now uniformly uses 4-space indentation
+
+    o Vignette now uses BiocStyle style
+
+version 0.99.1
+
+    o fixes a bug that gave an error when plotting with idiogram=TRUE. 
+      This was due to an update in the ggbio package that broke CAFE
+
+    o CAFE can now be used with species other than human
+      It is no longer limited to 22 autologous chromosomes

@@ -1,0 +1,419 @@
+%\VignetteIndexEntry{Manual}
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+<<style, eval=TRUE, echo=FALSE, results=tex>>=
+BiocStyle::latex()
+@
+\title{CAFE Manual}
+\author{Sander Bollen}
+\begin{document}
+\bibliographystyle{plain}
+\maketitle
+\tableofcontents
+\newpage
+\section{Introduction}
+So, you have downloaded the {\bf CAFE} package, and are wondering 
+"What on Earth can I do with this?". In answering this question, 
+we can first of all refer to the package name: I'm sure you'd all have 
+thought about a nice warm cup of coffee, but in reality {\bf CAFE} stands 
+for \textit{{\bf C}hromosomal {\bf A}berrations {\bf F}inder 
+in {\bf E}xpression data}. Now, that might not tell you much, so here is a
+slightly better - albeit longer - summary of what it does: {\bf CAFE} analyzes
+microarray expression data, and tries to find out whether your samples have any
+gross chromosomal gains or losses. On top of that, it provides some plotting
+functions - using the \Biocpkg{ggplot2} package - to give you a nice visual 
+tool to determine where those aberrations are located. How it exactly does this
+is something you can find later in this document. CAFE does not invent any 
+new algorithms for the detection of chromosomal aberrations. Instead, it takes
+the approach of Ben-David \textit{et al}, and molds it 
+into an easy-to-use R package. 
+
+\subsection{Prerequisites}
+As all software packages, {\bf CAFE} has its requirements. You should 
+preferably have the latest version of R, but at the very least version 2.10. 
+Other dependencies can be found in the DESCRIPTION file. Some packages 
+imported by {\bf CAFE} require you to have \texttt{libcurl} installed in your
+system, and by extension the \Biocpkg{RCurl} and \Biocpkg{Rtracklayer} 
+packages. If these are not yet installed in your system, this could take a 
+while to install. 
+
+\subsection{Preparing your file system}
+{\bf CAFE} analyzes microarray expression data. That means that without 
+anything \textit{to} analyze, it won't do anything at all. So, how do we fix
+this obvious problem? As a starter, {\bf CAFE} only analyzes .CEL files.
+This means that {\bf CAFE} will only work with data from Affymetrix microarrays.
+Illumina or other platforms unfortunately will not work. To prepare your 
+filesystem correctly, follow the following steps.
+
+Put all CEL files in a folder and then start R in that folder. Alternatively,
+you can set the working directory to this folder by
+\texttt{setwd("/some/folder/path/")}. And we're done. It's that simple. See
+figure 1 for a screenshot of how this looks in a file manager.
+
+
+See figure 1 for a screenshot of how this is layed out 
+\begin{figure}
+\centering
+\includegraphics[scale=1]{simple}
+\caption{The file system layout}
+\end{figure}
+
+\section{Analysis}
+Now we're ready to start analyzing our dataset(s). 
+
+{\bf CAFE} provides the \Rfunction{ProcessCels()} function. This function takes
+four arguments: \texttt{threshold.over}, \texttt{threshold.under}
+\texttt{remove\_method} and \texttt{local\_file}. The threshold will determine
+which probes are going to be considered as overexpressed. The default setting
+is \texttt{threshold.over=1.5}, meaning that probes with a relative expression
+over 1.5 times median will be considered overexpressed. Likewise
+\texttt{threshold.under} determines which probesets will be considered
+underexpressed. As for the \texttt{remove\_method} argument, this determines in
+what way \texttt{ProcessCels} will remove duplicate probes. See section 3.1 for
+an overview of this option. The \Rfunction{ProcessCels()} function will
+basically suck up all your CEL files in your working directory - but don't
+worry, they'll still be there in your file system - and perform some number
+magic on them; it will normalize, calculate probes that are overexpressed, log2
+transform and remove duplicates. It returns you a \texttt{list} object of your
+entire dataset, which the rest of {\bf CAFE} requires to function.
+
+So lets try that. First of all, we of course need to load the package:
+<<>>=
+library(CAFE)
+@
+Then, we should set our working directory to the dataset folder if we're not
+already there. 
+<<eval=FALSE>>=
+setwd("~/some/path")
+@
+
+Now we're there we can process the CEL files.
+<<eval=FALSE>>=
+datalist <- ProcessCels()
+@
+
+
+\subsection{A moment of reproducibillity}
+The stuff we've done above here is unfortunately not really reproducible. 
+It requires you to have .CEL files in a folder called \texttt{/some/path} in
+your home directory, and that's of course not very pretty. So to keep the rest
+of this document reproducible, the {\bf CAFE} package comes together with a
+data object. This is the \texttt{list} object returned by
+\texttt{ProcessCels()} when processing both
+\href{https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE10809}{GSE10809}
+and \href{https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE6561}{GSE6561}.
+<<>>=
+data("CAFE_data")
+#will put object named {\bf CAFE}_data in your global environment
+@
+\subsection{Statistics}
+So now we come to the core of {\bf CAFE}: finding which chromosomes are
+significantly over- or underexpressed. {\bf CAFE} uses \emph{thresholding} to
+determine which probes are overexpressed or underexpressed. We use the probes
+we deemed overexpressed by our threshold to create a contingency table which
+can then be used in an Exact Fisher or Chi-Square test. Basically we assume
+that everything over our defined threshold.over is really overexpressed, and
+everything uder our defined threshold.under is underexpressed. 
+
+To calculate p-values for chromosomes, we will use the
+\Rfunction{chromosomeStats()} function. We can then also select which test
+(fisher or chi square) we want to use. When performing multiple tests
+(i.e. if we are testing multiple chromosomes), we need to correct our p-values
+for type I errors. We can therefore set the \texttt{bonferroni} argument to
+true when testing multiple chromosomes. The \texttt{enrichment} argument 
+controls which side (over- or underexpressed) we are testing for.
+<<>>=
+#we first have to decide which samples we want to use.
+names(CAFE_data[[2]]) #to see which samples we got
+sam <- c(1,3) #so we use sample numbers 1, and 3 to compare against the rest
+chromosomeStats(CAFE_data,chromNum=17,samples=sam,
+                test="fisher",bonferroni=FALSE,enrichment="greater") 
+# we are only testing 1 chromosome
+@
+This uses an Exact Fisher test. Technically speaking, this is better than a chi
+square test, but can be slower for very large sample sizes. We can also do a
+chi square test, which is slightly faster.
+<<>>=
+chromosomeStats(CAFE_data,chromNum=17,samples=sam,
+                test="chisqr",bonferroni=FALSE,enrichment="greater")
+@
+As you will have seen, the output of this is different from
+\texttt{test="fisher"}. The reason for this is that the Fisher test gives
+an \textit{exact} p-value, whereas a chi square test is just an approximation.
+
+But if we now want to test multiple chromosomes, we have to correct our p-values
+<<>>=
+chromosomeStats(CAFE_data,chromNum="ALL",samples=sam,
+                test="fisher",bonferroni=TRUE,enrichment="greater")
+@
+
+The results which we got might be all nice and well - there seems be something
+amiss with chromosome 17 - but preferably we would like to delve a bit deeper.
+We would like to know which chromosome \textit{bands} are duplicated or lost.
+To do this we can use the same syntax as for chromosomes, except that we are
+using a different function:
+<<>>=
+bandStats(CAFE_data,chromNum=17,samples=sam,test="fisher",
+          bonferroni=TRUE,enrichment="greater") 
+#multiple bands per chromosome, so need bonferroni!
+@
+
+
+
+So this way we see that there is most likely a duplication around band 17p11.2
+\subsection{Plotting}
+So now we know that chromosome 17 for these two samples is aberrant, but we
+would like to plot that. A picture says more than a thousand words - as the
+saying goes. {\bf CAFE} provides four functions for plotting samples,
+\Rfunction{rawPlot()}, \Rfunction{slidPlot()}, \Rfunction{discontPlot()}
+and \Rfunction{facetPlot()}.
+\subsubsection{Raw plots}
+The \Rfunction{rawPlot()} function plots each individual probe along the
+chromosome with its 'raw', unaltered,  log2 relative expression value. This
+can give a very rough overview of what is happening. As a visual tool, an
+ideogram of the chromosome can be plotted over the plot. See figure 2 for an
+example.
+<<results=hide>>=
+p <- rawPlot(CAFE_data,samples=c(1,3,10),chromNum=17)
+@
+<<label=rawplot,include=FALSE>>=
+print(p)
+@
+\begin{figure}[h!]
+\centering
+<<label=rawplot1,fig=TRUE,echo=FALSE,width=8>>=
+<<rawplot>>
+@
+\caption{A rawPlot of samples 1, 3 and 10 for chromosome 17}
+\end{figure}
+\subsubsection{Sliding plots}
+The plots given by \Rfunction{rawPlot()} are often not very informative since
+the within-sample variation in expression levels is quite high. The
+\Rfunction{slidPlot()} function solves this problem by applying a sliding
+average to the entire sample. As such, patterns become visible that would
+otherwise have went unnoticed.  The function has two extra arguments as
+\Rfunction{rawPlot()}: if \texttt{combine=TRUE} a raw plot will be plotted in
+the background. The size of the sliding window can be determined by argument
+\texttt{k}. See figure 3 for an example.
+<<results=hide>>=
+p <- slidPlot(CAFE_data,samples=c(1,3,10),chromNum=17,k=100)
+@
+<<label=slidplot,include=FALSE>>=
+print(p)
+@
+\begin{figure}[h!]
+\centering
+<<label=slidplot,fig=TRUE,echo=FALSE,width=8>>=
+<<slidplot>>
+@
+\caption{A slidPlot of samples 1, 3 and 10 for chromosome 17 with a sliding
+window size of 50, with raw data in the background}
+\end{figure}
+\subsubsection{Discontinuous plots}
+In reality, there can only be an integer number of copy numbers for a given
+region (be it an entire chromosome or a band). One cannot 2.5 times duplicate
+a region; no, it is 0, 1, 2, 3 times etc. Also, there should be a defined
+boundary where the duplication or loss begins and ends. Yet, functions like
+\Rfunction{slidPlot()} will give smooth transitions and variable regions,
+which is a relatively poor reflection of what is actually happening. As such,
+we need a discontinuous smoother rather than a sliding average smoother. 
+A discontinuous smoother is a smoother which produces distinct "jumps" rather
+than smooth transitions. The \Rfunction{discontPlot()} function implements such
+a discontinuous smoother - called a \textit{Potts filter}. The smoothness
+(i.e. amount of jumps) can be determined by setting parameter \texttt{gamma}.
+A higher gamma will result in a smoother graph, with less jumps. See figure 4
+for an example.
+<<results=hide>>=
+p <- discontPlot(CAFE_data,samples=c(1,3,10),chromNum=17,gamma=100)
+@
+<<label=discontplot,include=FALSE>>=
+print(p)
+@
+\begin{figure}[h!]
+\centering
+<<label=discontplot,fig=TRUE,echo=FALSE>>=
+<<discontplot>>
+@
+\caption{A discontPlot of samples 1, 3 and 10 for chromosome 17 with a gamma
+of 50, with raw data in the background}
+\end{figure}
+\subsubsection{Facet plots}
+With the \Rfunction{facetPlot()} function you can plot all chromosomes stitched
+together horizontally in one single splot. It includes options to use either a
+sliding average smoother. See figure 4 for an example..
+<<results=hide>>=
+p <- facetPlot(CAFE_data,samples=c(1,3,10),slid=TRUE,combine=TRUE,k=100)
+@
+<<label=facetplot,include=FALSE>>=
+print(p)
+@
+\begin{figure}[h!]
+\centering
+<<label=facetplot,fig=TRUE,echo=FALSE,width=80,height=20>>=
+<<facetplot>>
+@
+\caption{A facetPlot of samples 1, 3 and 10 with a sliding average with window
+size of 50, with raw data in the background}
+\end{figure}
+
+\section{In a nutshell}
+As follows from the above, CAFE analysis basically boils down to just three
+steps
+\begin{enumerate}
+\item \texttt{data <- ProcessCels()}
+\item \texttt{xxxStats(data, ...)}
+\item \texttt{xxxPlot(data, ...)}
+\end{enumerate}
+
+For instance:
+<<eval=FALSE>>=
+data <- ProcessCels()
+chromosomeStats(data,samples=c(1,3),chromNum="ALL")
+discontPlot(data,samples=c(1,3),chromNum="ALL",gamma=100)
+@
+
+\section{Behind the scenes}
+\subsection{Normalization}
+Affymetrix CEL files are read in and normalized by the \Rfunction{justRMA()}
+function in the \Biocpkg{affy} package. Absent probes are then found
+(by the \Rfunction{mas5calls} function), and are subsequently removed if absent
+in more than 20\% of samples. After normalization is complete, relative
+expression values (to median) are calculated. The \texttt{remove\_method}
+argument controls which duplicate probes are removed from the dataset. 
+When \texttt{remove\_method=0}, no duplicate probes will be removed. When
+\texttt{remove\_method=1}, duplicate probes linking to the same gene will be
+removed such that each gene only links to one single probe, according to the
+following priorities:
+\begin{enumerate}
+\item Probes with \texttt{...\_at} are preferably retained
+\item Probes with \texttt{...a\_at}
+\item Probes with \texttt{...n\_at} 
+\item Probes with \texttt{...s\_at}
+\item And finally probes with \texttt{...x\_at}
+\end{enumerate}
+When this still results in multiple probes per gene, the probe with the
+earliest chromosomal location is retained.
+When \texttt{remove\_method=2}, duplicate probes are only removed when they
+link to the exact same location, using the same priority list as specified
+above. 
+\subsection{Category testing}
+When using \Rfunction{chromosomeStats()} and \Rfunction{bandStats()} the
+dataset is eventually split into four categories:
+\begin{enumerate}
+\item Whole dataset \& On Chromosome (or band)
+\item Whole dataset \& Overexpressed \& On Chromosome (or band)
+\item Sample(s) \& On Chromosome (or band)
+\item Sample(s) \& Overexpressed \& On Chromosome (or band)
+\end{enumerate}
+The number of probes for each category are counted, and saved in a so-called
+contingency table. Then we test the likelihood that Sample(s) occurs within
+Whole via either the Exact Fisher test or the Chi Square test. The Exact Fisher
+test supplies \textit{exact} p-values, whereas the Chi Square test supplies
+merely an approximation. However, the Exact Fisher test can be slower than a
+Chi Square test, and the Chi Square test increases in accuracy with increasing
+sample size.
+
+"Overexpressed" is defined as those probes which were over the set threshold
+- the \texttt{threshold.over} argument in \texttt{ProcessCels()}. Likewise,
+"underexpressed" is defined as those probes which were under the set threshold
+- argument \texttt{threshold.under}. Please note that these thresholds are a
+defined as a fraction of median expression value for each probe.  
+\subsection{Smoothers}
+\subsubsection{Sliding average}
+With the moving average we attempt to the smooth the raw data so that patterns
+emerge. We have a set of points $(x_i,y_i), i=1 \dots  n$, which is ordered
+such that $x_1 \leq \dots \leq x_n$. Since we plotting chromosomal location
+versus log2 relative expression, $x_i$ refers to chromosomal locations and
+$y_i$ refers to log2 relative expressions. Since chromosomal locations are
+integers, $x_i \in \mathbb{N}:x_i \geq0$, and since log2 relative expressions
+can be any real number $y_i \in \mathbb{R}$. We have a sliding average
+\emph{windows}, denoted $k$, which determines the smoothness. We are
+reconstructiong $y_i$ (the log2 relative expressions) to come to a smoother
+$\hat{y}_i$. For $y_i$ at least $k$-elements from the boundary, the smoother
+is calculated as in equation 1. For the remaining $\hat{y}_i$, where
+$i \in \mathbb{N}: 1 \leq i \leq k$ and $i \in \mathbb{N}: (n-k+1) \leq i \leq n$
+, we first define two variables $a$ and $b$, where $a = max(1,(i-k))$ and
+$b = min(n,(i+k))$. The remaining $\hat{y}_i$ are then calculated using
+equation 2.
+
+\begin{equation}
+\hat{y}_i =  \frac{1}{k} \cdot \sum\limits_{i=j}^{i+k} y_j , i \in \mathbb{N}: (k+1) \leq i \leq (n-k)
+\end{equation}
+\begin{equation}
+\hat{y}_i = \frac{\sum\limits_{i=a}^b y_i}{(a-b+1)} 
+\end{equation}
+\subsubsection{Discontinuous smoother}
+The discontinuous smoother used in \Rfunction{discontPlot()}, is essentially a
+minimization problem. We again have a set of points $(x_i,y_i), i=1 \dots  n$.
+This set is ordered in such manner that $x_1 \leq \dots \leq x_n$. For our
+particular problem $x_i$ refers to chromosomal coordinates, such that
+$x_i \in \mathbb{N}:x_i \geq 0$. Conversely, $y_i$ refers to log2 relative
+expressions, such that $y_i \in \mathbb{R}$. We want to reconstruct $y_i$
+in such a way that the reconstruction - called $\hat{y_i}$ - closely resembles
+$y_i$ but has as little jumps as possible. A jump is defined as
+$\hat{y_i} \neq \hat{y}_{i+1}$. The reconstruction $\hat{y}_i$ can be
+constructed by minimizing the following function:
+
+\begin{equation}
+H = \sum\limits_{i=1}^n ({y_i} - {\hat{y}_i})^2 + \gamma \cdot |(\hat{y}_i \neq \hat{y}_{i+1})|
+\end{equation}
+
+In the above formula, $||$ denotes cardinality. The first term in the formula
+denotes a least squares goodness-of-fit term. The second term determines how
+strict the formula is. A higher $\gamma$ will result in a flatter result, with
+fewer jumps, and this $\gamma$ can be any number over 0. The entire formula is
+called a \textit{Potts filter}. The mathematics behind this formula is
+described in detail by Winkler et al.
+
+The implementation in \texttt{discontPlot()} uses the algorithm descibed
+by Friedrich et al.
+
+\subsection{Non-Affymetrix data}
+Even though {\bf CAFE} is designed to work only with Affymetrix .CEl files,
+it is possible to analyse non-affymetrix data via a workaround. For {\bf CAFE}
+to work with non-affymetrix data, it is necessary you provide the correct data
+structure which we use to analyse our data. The major structure the software
+works with is a {\bf list of lists} structure. The list contains {\bf three}
+lists - named \texttt{\$whole}, \texttt{\$over} and \texttt{\$under} - which
+both contain data frames for each and every sample using the following format:
+\begin{enumerate}
+\item \texttt{\$ID}, some identifier (probe IDs in affymetrix) 
+(character vector)
+\item \texttt{\$Sym}, gene symbol (character vector)
+\item \texttt{\$Value}, log2 transformed expression value (numerical vector)
+\item \texttt{\$LogRel}, log2 transformed relative expressions 
+(as a function of mean) (numerical vector)
+\item \texttt{\$Loc}, chromosomal locations in bp (integer vector)
+\item \texttt{\$Chr}, chromosome number (character vector)
+\item \texttt{\$Band}, cytoband (character vector)
+\end{enumerate}
+For instance 
+<<>>=
+str(CAFE_data$whole[[1]])
+@
+The \texttt{\$whole} list should contain data for all probes, the 
+\texttt{\$over} list should only contain those probes which are deemed
+overexpressed (not required if one uses \texttt{thresholding=FALSE}). The order
+of probes and locations in \texttt{\$whole} should be \emph{identical} acros
+s all samples. Each list element (i.e. the dataframes) is named according to
+its sample name.
+For instance
+<<>>=
+print(names(CAFE_data$whole))
+@
+\section{References}
+\begin{enumerate}
+\item Uri Ben-David, Yoav Mayshar, and Nissim Benvenisty.
+Virtual karyotyping of pluripotent stem cells on the basis of their global gene
+expression profiles. \textit{Nature protocols}, \textbf{8(5):989-997, 2013}.
+\item G Winkler, Volkmar Liebscher, and V Aurich.
+Smoothers for Discontinuous Signals. 
+\textit{Journal of Nonparametric Statistics}, \textbf{14:203-222, 2002}.
+\item F Friedrich, a Kempe, V Liebscher, and G Winkler.
+Complexity Penalized M- Estimation.
+\textit{Journal of Computational and Graphical Statistics},
+\textbf{17(1):201-224, March 2008}.
+\end{enumerate}
+\end{document}

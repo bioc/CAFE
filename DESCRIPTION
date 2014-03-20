@@ -1,0 +1,17 @@
+Package: CAFE
+Type: Package
+Title: Chromosmal Aberrations Finder in Expression data
+Version: 0.99.2
+Date: 2014-03-16
+Author: Sander Bollen
+Maintainer: Sander Bollen <sander.h.bollen@gmail.com>
+Depends: R (>= 2.10), biovizBase, GenomicRanges, IRanges, ggbio
+Imports: affy, ggplot2, annotate, grid, gridExtra, tcltk, Biobase
+Suggests: RUnit, BiocGenerics, BiocStyle
+Description: Detection and visualizations of gross chromosomal
+        aberrations using Affymetrix expression microarrays as input
+License: GPL-3
+ByteCompile: true
+biocViews: GeneExpression, Microarray, OneChannel, GeneSetEnrichment
+Collate: microProcess-improve.R selectSamples.R chromosomeStats.R
+        rawPlot.R slidPlot.R discontPlot.R facetPlot.R
