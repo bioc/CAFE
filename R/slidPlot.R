@@ -131,7 +131,7 @@ slidPlot <- function(datalist,samples=c(1,2),chromNum=1,combine=FALSE,k=1,
                     if(idiogram == TRUE){
                         data(hg19IdeogramCyto, envir=environment())
                         chr <- paste("chr",as.character(o),sep="")
-                        suppressMessages(p <- plotSingleChrom(hg19IdeogramCyto,
+                        suppressMessages(p <- plotIdeogram(hg19IdeogramCyto,
                                                               chr,xlabel=FALSE))
                         p <- p + theme(strip.background=element_blank(),
                                        strip.text=element_blank()) +
@@ -212,7 +212,7 @@ slidPlot <- function(datalist,samples=c(1,2),chromNum=1,combine=FALSE,k=1,
                 if(idiogram==TRUE){
                     data(hg19IdeogramCyto, envir=environment())
                     chr <- paste("chr",as.character(chromNum),sep="")
-                    suppressMessages(p <- plotSingleChrom(hg19IdeogramCyto,
+                    suppressMessages(p <- plotIdeogram(hg19IdeogramCyto,
                                                           chr,xlabel=FALSE))
                     p <- p + theme(strip.background=element_blank(),
                                    strip.text=element_blank()) +
@@ -313,7 +313,7 @@ slidPlot <- function(datalist,samples=c(1,2),chromNum=1,combine=FALSE,k=1,
                     if(idiogram==TRUE){
                         data(hg19IdeogramCyto, envir=environment())
                         chr <- paste("chr",as.character(o),sep="")
-                        suppressMessages(p <- plotSingleChrom(hg19IdeogramCyto,
+                        suppressMessages(p <- plotIdeogram(hg19IdeogramCyto,
                                                               chr,xlabel=FALSE))
                         p <- p + theme(strip.background=element_blank(),
                                        strip.text=element_blank()) +
@@ -409,7 +409,7 @@ slidPlot <- function(datalist,samples=c(1,2),chromNum=1,combine=FALSE,k=1,
                 if(idiogram==TRUE){
                     data(hg19IdeogramCyto, envir=environment())
                     chr <- paste("chr",as.character(chromNum),sep="")
-                    suppressMessages(p <- plotSingleChrom(hg19IdeogramCyto,
+                    suppressMessages(p <- plotIdeogram(hg19IdeogramCyto,
                                                           chr,xlabel=FALSE))
                     p <- p + theme(strip.background=element_blank(),
                                    strip.text=element_blank()) +
@@ -521,7 +521,7 @@ slidPlot <- function(datalist,samples=c(1,2),chromNum=1,combine=FALSE,k=1,
                     if(idiogram == TRUE){
                         data(hg19IdeogramCyto, envir=environment())
                         chr <- paste("chr",as.character(g),sep="")
-                        suppressMessages(p <- plotSingleChrom(hg19IdeogramCyto,
+                        suppressMessages(p <- plotIdeogram(hg19IdeogramCyto,
                                                               chr,xlabel=FALSE))
                         p <- p + theme(strip.background=element_blank(),
                                        strip.text=element_blank()) +
@@ -615,7 +615,7 @@ slidPlot <- function(datalist,samples=c(1,2),chromNum=1,combine=FALSE,k=1,
                 if(idiogram == TRUE){
                     data(hg19IdeogramCyto, envir=environment())
                     chr <- paste("chr",as.character(chromNum),sep="")
-                    suppressMessages(p <- plotSingleChrom(hg19IdeogramCyto,
+                    suppressMessages(p <- plotIdeogram(hg19IdeogramCyto,
                                                           chr,xlabel=FALSE))
                     p <- p + theme(strip.background=element_blank(),
                                    strip.text=element_blank()) +
@@ -727,7 +727,7 @@ slidPlot <- function(datalist,samples=c(1,2),chromNum=1,combine=FALSE,k=1,
                     if(idiogram==TRUE){
                         data(hg19IdeogramCyto, envir=environment())
                         chr <- paste("chr",as.character(v),sep="")
-                        suppressMessages(p <- plotSingleChrom(hg19IdeogramCyto,
+                        suppressMessages(p <- plotIdeogram(hg19IdeogramCyto,
                                                               chr,xlabel=FALSE))
                         p <- p + theme(strip.background=element_blank(),
                                        strip.text=element_blank()) +
@@ -837,7 +837,7 @@ slidPlot <- function(datalist,samples=c(1,2),chromNum=1,combine=FALSE,k=1,
                 if(idiogram == TRUE){
                     data(hg19IdeogramCyto, envir=environment())
                     chr <- paste("chr",as.character(chromNum),sep="")
-                    suppressMessages(p <- plotSingleChrom(hg19IdeogramCyto,
+                    suppressMessages(p <- plotIdeogram(hg19IdeogramCyto,
                                                           chr,xlabel=FALSE))
                     p <- p + theme(strip.background=element_blank(),
                                    strip.text=element_blank()) +

@@ -104,7 +104,7 @@ discontPlot <- function(datalist,samples=c(1,2),chromNum=1,gamma=300,
                 else{
                     data(hg19IdeogramCyto, envir=environment())
                     chr <- paste("chr",as.character(i),sep="")
-                    suppressMessages(p <- plotSingleChrom(hg19IdeogramCyto,chr,
+                    suppressMessages(p <- plotIdeogram(hg19IdeogramCyto,chr,
                                                           xlabel=FALSE))
                     png(nam,1600,1200)
                     p <- p + theme(strip.background=element_blank(),
@@ -181,7 +181,7 @@ discontPlot <- function(datalist,samples=c(1,2),chromNum=1,gamma=300,
             else{
                 data(hg19IdeogramCyto, envir=environment())
                 chr <- paste("chr",as.character(chromNum),sep="")
-                suppressMessages(p <- plotSingleChrom(hg19IdeogramCyto, chr,
+                suppressMessages(p <- plotIdeogram(hg19IdeogramCyto, chr,
                                                       xlabel=FALSE))
                 png(nam,1600,1200)
                 p <- p + theme(strip.background=element_blank(),
@@ -273,7 +273,7 @@ discontPlot <- function(datalist,samples=c(1,2),chromNum=1,gamma=300,
                 else{
                     data(hg19IdeogramCyto, envir=environment())
                     chr <- paste("chr",as.character(a),sep="")
-                    suppressMessages(p <- plotSingleChrom(hg19IdeogramCyto, chr,
+                    suppressMessages(p <- plotIdeogram(hg19IdeogramCyto, chr,
                                                           xlabel=FALSE))
                     png(nam,1600,1200)
                     p <- p + theme(strip.background=element_blank(),
@@ -361,7 +361,7 @@ discontPlot <- function(datalist,samples=c(1,2),chromNum=1,gamma=300,
             else{
                 data(hg19IdeogramCyto, envir=environment())
                 chr <- paste("chr",as.character(chromNum),sep="")
-                suppressMessages(p <- plotSingleChrom(hg19IdeogramCyto,
+                suppressMessages(p <- plotIdeogram(hg19IdeogramCyto,
                                                       chr,xlabel=FALSE))
                 png(nam,1600,1200)
                 p <- p + theme(strip.background=element_blank(),

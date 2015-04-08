@@ -54,7 +54,7 @@ rawPlot <- function(datalist,samples=c(1,2),chromNum=1,idiogram=FALSE,
                     dfr <- data.frame(Loc=daf$Loc,rel=daf[,4])
                     data(hg19IdeogramCyto, envir=environment())
                     chr <- paste("chr",as.character(i),sep="")
-                    suppressMessages(p <- plotSingleChrom(hg19IdeogramCyto, 
+                    suppressMessages(p <- plotIdeogram(hg19IdeogramCyto, 
                                                           chr,xlabel=FALSE))
                     p <- p + theme(strip.background=element_blank(),
                                    strip.text=element_blank()) +
@@ -125,7 +125,7 @@ rawPlot <- function(datalist,samples=c(1,2),chromNum=1,idiogram=FALSE,
                 dfr <- data.frame(Loc=daf$Loc,rel=daf[,4])
                 data(hg19IdeogramCyto, envir=environment())
                 chr <- paste("chr",as.character(chromNum),sep="")
-                suppressMessages(p <- plotSingleChrom(hg19IdeogramCyto, chr,
+                suppressMessages(p <- plotIdeogram(hg19IdeogramCyto, chr,
                                                       xlabel=FALSE))
                 p <- p + theme(strip.background=element_blank(),
                                strip.text=element_blank()) +
@@ -219,7 +219,7 @@ rawPlot <- function(datalist,samples=c(1,2),chromNum=1,idiogram=FALSE,
                 if(idiogram==TRUE){
                     data(hg19IdeogramCyto, envir=environment())
                     chr <- paste("chr",as.character(r),sep="")
-                    suppressMessages(p <- plotSingleChrom(hg19IdeogramCyto,
+                    suppressMessages(p <- plotIdeogram(hg19IdeogramCyto,
                                                           chr,xlabel=FALSE))
                     p <- p + theme(strip.background=element_blank(),
                                    strip.text=element_blank()) +
@@ -309,7 +309,7 @@ rawPlot <- function(datalist,samples=c(1,2),chromNum=1,idiogram=FALSE,
             if(idiogram==TRUE){
                 data(hg19IdeogramCyto, envir=environment())
                 chr <- paste("chr",as.character(chromNum),sep="")
-                suppressMessages(p <- plotSingleChrom(hg19IdeogramCyto,
+                suppressMessages(p <- plotIdeogram(hg19IdeogramCyto,
                                                       chr,xlabel=FALSE))
                 p <- p + theme(strip.background=element_blank(),
                                strip.text=element_blank()) +
