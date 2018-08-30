@@ -42,8 +42,9 @@ ProcessCels <- function(threshold.over=1.5, threshold.under=(2/3), remove_method
     # variable doesnt exist
     f <- try(library(annodb,character.only=TRUE))
     if(class(f)=="try-error"){
-        source("http://bioconductor.org/biocLite.R")
-        biocLite(annodb)
+        if (!requireNamespace("BiocManager", quietly=TRUE))
+            install.packages("BiocManager")
+        BiocManager::install(annodb)
         library(annodb,character.only=TRUE)
     }
     
