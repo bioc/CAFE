@@ -38,7 +38,6 @@ ProcessCels <- function(threshold.over=1.5, threshold.under=(2/3), remove_method
     #get chromosomal lomessageions
     anno <- eset@annotation
     annodb <- paste(anno,".db",sep="")
-    biocLite <- NULL #prevent R CMD check from thinking this
     # variable doesnt exist
     f <- try(library(annodb,character.only=TRUE))
     if(class(f)=="try-error"){
